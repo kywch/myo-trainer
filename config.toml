@@ -8,6 +8,7 @@ policy_name = "Policy"
 
 [rnn]
 
+# Refer https://github.com/MyoHub/myosuite/blob/main/myosuite/agents/config_mujoco.yaml
 [train]
 seed = 1
 torch_deterministic = true
@@ -18,7 +19,7 @@ learning_rate = 2.5e-4
 anneal_lr = true
 gamma = 0.99
 gae_lambda = 0.95
-update_epochs = 4
+update_epochs = 3
 norm_adv = true
 clip_coef = 0.1
 clip_vloss = true
@@ -28,13 +29,13 @@ max_grad_norm = 0.5
 ent_coef = 0.01
 # target_kl = None  # Assign a value when needed.
 
-num_envs = 8
-num_workers = 8
-env_batch_size = 8
+num_envs = 48
+num_workers = 24
+env_batch_size = 24
 zero_copy = true
 data_dir = "experiments"
-checkpoint_interval = 200
-batch_size = 1024
+checkpoint_interval = 1000
+batch_size = 2048
 minibatch_size = 512
 bptt_horizon = 16
 compile = false
