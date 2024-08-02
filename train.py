@@ -361,10 +361,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--mode",
         type=str,
-        default="train",
+        default="eval",
         choices="train eval evaluate sweep sweep-carbs autotune profile".split(),
     )
-    parser.add_argument("--eval-model-path", type=str, default=None)
+    parser.add_argument("--eval-model-path", type=str, default="checkpoints/myo_model_4845.pt")
     parser.add_argument(
         "--baseline", action="store_true", help="Pretrained baseline where available"
     )
@@ -447,7 +447,6 @@ if __name__ == "__main__":
             agent_creator=make_policy,
             agent_kwargs=args,
             model_path=args["eval_model_path"],
-            render_mode=args["render_mode"],
             device=args["train"]["device"],
         )
     elif args["mode"] == "sweep":

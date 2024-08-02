@@ -622,15 +622,11 @@ def rollout(
     rnn_cls,
     agent_creator,
     agent_kwargs,
-    render_mode="auto",
     model_path=None,
     device="cuda",
 ):
     # We are just using Serial vecenv to give a consistent
     # single-agent/multi-agent API for evaluation
-    if render_mode != "auto":
-        env_kwargs["render_mode"] = render_mode
-
     env = pufferlib.vector.make(env_creator, env_kwargs=env_kwargs)
 
     if model_path is None:
@@ -638,34 +634,17 @@ def rollout(
     else:
         agent = torch.load(model_path, map_location=device)
 
-    ob, info = env.reset()
-    driver = env.driver_env
+    ob, _ = env.reset()
+    driver = env.driver_env.env
     os.system("clear")
     state = None
 
-    frames = []
+    # frames = []
     tick = 0
-    while tick <= 10000000:
-        if tick % 1 == 0:
-            render = driver.render()
-            if driver.render_mode == "ansi":
-                print("\033[0;0H" + render + "\n")
-                time.sleep(0.05)
-            elif driver.render_mode == "rgb_array":
-                frames.append(render)
-                import cv2
-
-                render = cv2.cvtColor(render, cv2.COLOR_RGB2BGR)
-                cv2.imshow("frame", render)
-                cv2.waitKey(1)
-                time.sleep(1 / 24)
-            elif driver.render_mode in ("human", "raylib") and render is not None:
-                frames.append(render)
-                if driver.outcome != 0:
-                    break
-
+    while tick <= 1000:
+        driver.mj_render()
         with torch.no_grad():
-            ob = torch.from_numpy(ob).to(device)
+            ob = torch.from_numpy(ob).to(device).view(1, -1)
             if hasattr(agent, "lstm"):
                 action, _, _, _, state = agent(ob, state)
             else:
@@ -673,16 +652,26 @@ def rollout(
 
             action = action.cpu().numpy().reshape(env.action_space.shape)
 
-        ob, reward = env.step(action)[:2]
+        ob, reward, done, truncated, infos = driver.step(action[0])
+
         reward = reward.mean()
-        if tick % 128 == 0:
-            print(f"Reward: {reward:.4f}, Tick: {tick}")
+        print(f"Reward: {reward:.4f}, Tick: {tick}, Done: {done}")
+
         tick += 1
+        time.sleep(0.1)
 
-    # Save frames as gif
-    import imageio
+        if done:
+            print("Done...")
+            ob, _ = env.reset()
 
-    imageio.mimsave("../docker/dire_victory.gif", frames, fps=15, loop=0)
+        if truncated:
+            print("Truncated...")
+            ob, _ = env.reset()
+
+    # # Save frames as gif
+    # import imageio
+
+    # imageio.mimsave("../docker/dire_victory.gif", frames, fps=15, loop=0)
 
 
 def seed_everything(seed, torch_deterministic):

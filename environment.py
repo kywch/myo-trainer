@@ -41,4 +41,8 @@ class MyoWrapper(gymnasium.Wrapper):
 
     def step(self, action):
         obs, reward, done, truncated, info = self.env.step(action)
+
+        # CHECK ME: is done flag correct?
+        done = info["done"] or info["solved"]
+
         return obs, reward, done, truncated, info
