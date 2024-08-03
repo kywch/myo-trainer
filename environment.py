@@ -55,13 +55,16 @@ class MyoWrapper(gymnasium.Wrapper):
         # CHECK ME: is done flag correct?
         done = info["done"] or info["solved"]
 
+        if done or truncated:
+            info["episode_solved"] = info["solved"]
+
         # Reward if pose error gets smaller
         curr_pose_err = self._get_pose_err(obs)
         pose_err_bonus = self.last_pose_err - curr_pose_err
         self.last_pose_err = curr_pose_err
 
         large_action_penalty = info["rwd_dict"]["act_reg"] * 0.01
-        solve_bonus = 1 if info["solved"] else 0
+        solve_bonus = 0.2 if info["solved"] else 0
 
         reward = -1 if info["done"] else solve_bonus + pose_err_bonus + large_action_penalty
 
