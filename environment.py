@@ -39,13 +39,30 @@ class MyoWrapper(gymnasium.Wrapper):
             dtype=np.float64,  # change from float32, which causes type error
         )
 
+        self.last_pose_err = None
+
+    def reset(self, **kwargs):
+        obs, info = self.env.reset(**kwargs)
+        self.last_pose_err = self._get_pose_err(obs)
+        return obs, info
+
+    def _get_pose_err(self, obs):
+        return obs[2]  # obs['pose_err'], idx 2
+
     def step(self, action):
         obs, reward, done, truncated, info = self.env.step(action)
 
         # CHECK ME: is done flag correct?
         done = info["done"] or info["solved"]
 
-        # Use simple reward
-        reward = 1 if info["solved"] else 0
+        # Reward if pose error gets smaller
+        curr_pose_err = self._get_pose_err(obs)
+        pose_err_bonus = self.last_pose_err - curr_pose_err
+        self.last_pose_err = curr_pose_err
+
+        large_action_penalty = info["rwd_dict"]["act_reg"] * 0.01
+        solve_bonus = 1 if info["solved"] else 0
+
+        reward = -1 if info["done"] else solve_bonus + pose_err_bonus + large_action_penalty
 
         return obs, reward, done, truncated, info
