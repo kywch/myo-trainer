@@ -66,6 +66,6 @@ class MyoWrapper(gymnasium.Wrapper):
         large_action_penalty = info["rwd_dict"]["act_reg"] * 0.01
         solve_bonus = 0.2 if info["solved"] else 0
 
-        reward = -1 if info["done"] else solve_bonus + pose_err_bonus + large_action_penalty
+        reward = -1 if info["done"] else solve_bonus + 10 * pose_err_bonus + large_action_penalty
 
         return obs, reward, done, truncated, info
