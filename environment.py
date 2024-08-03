@@ -45,4 +45,7 @@ class MyoWrapper(gymnasium.Wrapper):
         # CHECK ME: is done flag correct?
         done = info["done"] or info["solved"]
 
+        # Use simple reward
+        reward = 1 if info["solved"] else 0
+
         return obs, reward, done, truncated, info

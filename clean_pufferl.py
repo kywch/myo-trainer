@@ -654,7 +654,6 @@ def rollout(
 
         ob, reward, done, truncated, infos = driver.step(action[0])
 
-        reward = reward.mean()
         print(f"Reward: {reward:.4f}, Tick: {tick}, Done: {done}")
 
         tick += 1
