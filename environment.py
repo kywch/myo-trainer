@@ -11,7 +11,7 @@ import pufferlib.postprocess
 from myosuite.utils import gym
 
 
-def env_creator(name="myoElbowPose1D6MRandom-v0"):
+def env_creator(name="myoElbowPose1D6MFixed-v0"):
     return functools.partial(make_env, name)
 
 
@@ -66,6 +66,6 @@ class MyoWrapper(gymnasium.Wrapper):
         large_action_penalty = info["rwd_dict"]["act_reg"] * 0.01
         solve_bonus = 0.2 if info["solved"] else 0
 
-        reward = -1 if info["done"] else solve_bonus + 10 * pose_err_bonus + large_action_penalty
+        reward = solve_bonus + 10 * pose_err_bonus + large_action_penalty
 
         return obs, reward, done, truncated, info
