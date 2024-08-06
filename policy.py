@@ -2,13 +2,13 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+import pufferlib
 from pufferlib.pytorch import layer_init
 
 
 class Policy(nn.Module):
     def __init__(self, env, hidden_size=128):
         super().__init__()
-        self.is_continuous = True
 
         self.encoder = nn.Sequential(
             layer_init(nn.Linear(np.array(env.single_observation_space.shape).prod(), hidden_size)),
@@ -17,10 +17,16 @@ class Policy(nn.Module):
             nn.Tanh(),
         )
 
-        self.decoder_mean = layer_init(
-            nn.Linear(hidden_size, env.single_action_space.shape[0]), std=0.01
-        )
-        self.decoder_logstd = nn.Parameter(torch.zeros(1, env.single_action_space.shape[0]))
+        self.is_continuous = isinstance(env.single_action_space, pufferlib.spaces.Box)
+        if self.is_continuous:
+            self.decoder_mean = layer_init(
+                nn.Linear(hidden_size, env.single_action_space.shape[0]), std=0.01
+            )
+            self.decoder_logstd = nn.Parameter(torch.zeros(1, env.single_action_space.shape[0]))
+        else:
+            self.decoders = torch.nn.ModuleList(
+                [layer_init(torch.nn.Linear(hidden_size, n)) for n in env.single_action_space.nvec]
+            )
 
         self.value_head = layer_init(nn.Linear(hidden_size, 1), std=1.0)
 
@@ -41,10 +47,13 @@ class Policy(nn.Module):
         Assumes no time dimension (handled by LSTM wrappers)."""
         value = self.value_head(hidden)
 
-        mean = self.decoder_mean(hidden)
-        logstd = self.decoder_logstd.expand_as(mean)
-        std = torch.exp(logstd)
-        probs = torch.distributions.Normal(mean, std)
-
-        # batch = hidden.shape[0]
-        return probs, value
+        if self.is_continuous:
+            mean = self.decoder_mean(hidden)
+            logstd = self.decoder_logstd.expand_as(mean)
+            std = torch.exp(logstd)
+            probs = torch.distributions.Normal(mean, std)
+            # batch = hidden.shape[0]
+            return probs, value
+        else:
+            actions = [dec(hidden) for dec in self.decoders]
+            return actions, value

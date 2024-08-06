@@ -655,6 +655,11 @@ def rollout(
         ob, reward, done, truncated, infos = driver.step(action[0])
 
         print(f"Reward: {reward:.4f}, Tick: {tick}, Done: {done}")
+        print(f"Next action: {action[0]}")
+
+        user_input = input("Enter actions separated by spaces: ")
+        if len(user_input) > 0:
+            action[0] = np.array([float(x) for x in user_input.split()])
 
         tick += 1
         time.sleep(0.1)
