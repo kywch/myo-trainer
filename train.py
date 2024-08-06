@@ -362,7 +362,7 @@ if __name__ == "__main__":
         "--mode",
         type=str,
         default="train",
-        choices="train eval evaluate sweep sweep-carbs autotune profile".split(),
+        choices="train eval evaluate sweep sweep-carbs autotune p5rofile".split(),
     )
     parser.add_argument("--eval-model-path", type=str, default=None)
     parser.add_argument(
