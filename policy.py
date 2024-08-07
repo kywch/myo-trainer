@@ -6,6 +6,11 @@ import pufferlib
 from pufferlib.pytorch import layer_init
 
 
+class Recurrent(pufferlib.models.LSTMWrapper):
+    def __init__(self, env, policy, input_size=128, hidden_size=128, num_layers=1):
+        super().__init__(env, policy, input_size, hidden_size, num_layers)
+
+
 class Policy(nn.Module):
     def __init__(self, env, hidden_size=128):
         super().__init__()

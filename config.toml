@@ -1,6 +1,6 @@
 [base]
 policy_name = "Policy"
-# rnn_name = None  # Assign a value when needed.
+rnn_name = "Recurrent"  # Assign a value when needed.
 
 [env]
 
@@ -38,5 +38,5 @@ checkpoint_interval = 1000
 batch_size = 2048
 minibatch_size = 512
 bptt_horizon = 16
-compile = false
+compile = true
 compile_mode = "reduce-overhead"
