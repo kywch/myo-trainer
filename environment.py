@@ -1,7 +1,8 @@
 # from pdb import set_trace as T
 
 import functools
-import numpy as np
+
+# import numpy as np
 import gymnasium
 
 import pufferlib
@@ -40,12 +41,12 @@ class MyoWrapper(gymnasium.Wrapper):
         super().__init__(env)
 
         # override observation space
-        self._observation_space = gym.spaces.Box(
-            low=env.observation_space.low[0],
-            high=env.observation_space.high[0],
-            shape=env.observation_space.shape,
-            dtype=np.float64,  # change from float32, which causes type error
-        )
+        # self._observation_space = gym.spaces.Box(
+        #     low=env.observation_space.low[0],
+        #     high=env.observation_space.high[0],
+        #     shape=env.observation_space.shape,
+        #     dtype=np.float64,  # change from float32, which causes type error
+        # )
 
         self.last_pose_err = None
 
