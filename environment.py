@@ -15,7 +15,7 @@ def env_creator(name="myoElbowPose1D6MFixed-v0"):
     return functools.partial(make_env, name)
 
 
-def make_env(name, gamma=0.99):
+def make_env(name):
     """Create an environment by name"""
     env = gym.make(name)
 
@@ -24,13 +24,13 @@ def make_env(name, gamma=0.99):
 
     env = MyoWrapper(env)
     env = pufferlib.postprocess.ClipAction(env)
-    # env = pufferlib.postprocess.EpisodeStats(env)
+    env = pufferlib.postprocess.EpisodeStats(env)
 
-    env = gym.wrappers.RecordEpisodeStatistics(env)
-    env = gym.wrappers.NormalizeObservation(env)
-    env = gym.wrappers.TransformObservation(env, lambda obs: np.clip(obs, -10, 10))
-    env = gym.wrappers.NormalizeReward(env, gamma=gamma)
-    env = gym.wrappers.TransformReward(env, lambda reward: np.clip(reward, -10, 10))
+    # env = gym.wrappers.RecordEpisodeStatistics(env)
+    # env = gym.wrappers.NormalizeObservation(env)
+    # env = gym.wrappers.TransformObservation(env, lambda obs: np.clip(obs, -10, 10))
+    # env = gym.wrappers.NormalizeReward(env, gamma=gamma)
+    # env = gym.wrappers.TransformReward(env, lambda reward: np.clip(reward, -10, 10))
 
     return pufferlib.emulation.GymnasiumPufferEnv(env=env)
 
