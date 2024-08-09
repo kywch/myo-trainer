@@ -442,7 +442,9 @@ class Experience:
             pin_memory=pin,
             device=device if not pin else "cpu",
         )
-        self.actions = torch.zeros(batch_size, *atn_shape, dtype=int, pin_memory=pin)
+        self.actions = torch.zeros(
+            batch_size, *atn_shape, pin_memory=pin
+        )  # dtype=int, pin_memory=pin)
         self.logprobs = torch.zeros(batch_size, pin_memory=pin)
         self.rewards = torch.zeros(batch_size, pin_memory=pin)
         self.dones = torch.zeros(batch_size, pin_memory=pin)

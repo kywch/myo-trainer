@@ -15,7 +15,7 @@ def env_creator(name="myoElbowPose1D6MFixed-v0"):
     return functools.partial(make_env, name)
 
 
-def make_env(name):
+def make_env(name, gamma=0.99):
     """Create an environment by name"""
     env = gym.make(name)
 
@@ -24,7 +24,14 @@ def make_env(name):
 
     env = MyoWrapper(env)
     env = pufferlib.postprocess.ClipAction(env)
-    env = pufferlib.postprocess.EpisodeStats(env)
+    # env = pufferlib.postprocess.EpisodeStats(env)
+
+    env = gym.wrappers.RecordEpisodeStatistics(env)
+    env = gym.wrappers.NormalizeObservation(env)
+    env = gym.wrappers.TransformObservation(env, lambda obs: np.clip(obs, -10, 10))
+    env = gym.wrappers.NormalizeReward(env, gamma=gamma)
+    env = gym.wrappers.TransformReward(env, lambda reward: np.clip(reward, -10, 10))
+
     return pufferlib.emulation.GymnasiumPufferEnv(env=env)
 
 
@@ -32,20 +39,22 @@ class MyoWrapper(gymnasium.Wrapper):
     def __init__(self, env):
         super().__init__(env)
 
-        # override observation space
-        self._observation_space = gym.spaces.Box(
-            low=env.observation_space.low[0],
-            high=env.observation_space.high[0],
-            shape=env.observation_space.shape,
-            dtype=np.float64,  # change from float32, which causes type error
-        )
+        # # override observation space
+        # self._observation_space = gym.spaces.Box(
+        #     low=env.observation_space.low[0],
+        #     high=env.observation_space.high[0],
+        #     shape=env.observation_space.shape,
+        #     dtype=np.float64,  # change from float32, which causes type error
+        # )
 
         self.last_pose_err = None
 
     def reset(self, **kwargs):
         obs, info = self.env.reset(**kwargs)
         self.last_pose_err = self._get_pose_err(obs)
-        return obs, info
+
+        # TODO: obs needs to be float32
+        return obs.astype(np.float32), info
 
     def _get_pose_err(self, obs):
         return obs[2]  # obs['pose_err'], idx 2
@@ -68,4 +77,8 @@ class MyoWrapper(gymnasium.Wrapper):
 
         # reward = solve_bonus + 10 * pose_err_bonus
 
-        return obs, reward, done, truncated, info
+        # reward numbers seem too large, so we scale them down
+        # reward = reward / 1000
+
+        # TODO: obs needs to be float32
+        return obs.astype(np.float32), reward, done, truncated, info
