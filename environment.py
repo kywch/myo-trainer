@@ -24,8 +24,8 @@ def make_env(name):
 
     env = MyoWrapper(env)
     env = pufferlib.postprocess.ClipAction(env)
-    # env = pufferlib.postprocess.EpisodeStats(env)
-    env = gym.wrappers.RecordEpisodeStatistics(env)
+    env = EpisodeStats(env)
+    # env = gym.wrappers.RecordEpisodeStatistics(env)
 
     # env = gym.wrappers.NormalizeObservation(env)
     # env = gym.wrappers.TransformObservation(env, lambda obs: np.clip(obs, -10, 10))
@@ -81,3 +81,33 @@ class MyoWrapper(gymnasium.Wrapper):
 
         # TODO: obs needs to be float32
         return obs, reward, done, truncated, info
+
+
+### Put the wrappers here, for now
+
+
+class EpisodeStats(gymnasium.Wrapper):
+    """Wrapper for Gymnasium environments that stores
+    episodic returns and lengths in infos"""
+
+    def __init__(self, env):
+        self.env = env
+        self.observation_space = env.observation_space
+        self.action_space = env.action_space
+        self.reset()
+
+    def reset(self, seed=None, options=None):
+        self.info = dict(episode_return=[], episode_length=0)
+        return self.env.reset(seed=seed, options=options)
+
+    def step(self, action):
+        observation, reward, terminated, truncated, info = super().step(action)
+
+        self.info["episode_return"] += reward
+        self.info["episode_length"] += 1
+
+        if terminated or truncated:
+            for k, v in self.info.items():
+                info[k] = v
+
+        return observation, reward, terminated, truncated, info
