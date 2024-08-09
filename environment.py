@@ -39,13 +39,13 @@ class MyoWrapper(gymnasium.Wrapper):
     def __init__(self, env):
         super().__init__(env)
 
-        # # override observation space
-        # self._observation_space = gym.spaces.Box(
-        #     low=env.observation_space.low[0],
-        #     high=env.observation_space.high[0],
-        #     shape=env.observation_space.shape,
-        #     dtype=np.float64,  # change from float32, which causes type error
-        # )
+        # override observation space
+        self._observation_space = gym.spaces.Box(
+            low=env.observation_space.low[0],
+            high=env.observation_space.high[0],
+            shape=env.observation_space.shape,
+            dtype=np.float64,  # change from float32, which causes type error
+        )
 
         self.last_pose_err = None
 
@@ -53,8 +53,7 @@ class MyoWrapper(gymnasium.Wrapper):
         obs, info = self.env.reset(**kwargs)
         self.last_pose_err = self._get_pose_err(obs)
 
-        # TODO: obs needs to be float32
-        return obs.astype(np.float32), info
+        return obs, info
 
     def _get_pose_err(self, obs):
         return obs[2]  # obs['pose_err'], idx 2
@@ -81,4 +80,4 @@ class MyoWrapper(gymnasium.Wrapper):
         # reward = reward / 1000
 
         # TODO: obs needs to be float32
-        return obs.astype(np.float32), reward, done, truncated, info
+        return obs, reward, done, truncated, info
