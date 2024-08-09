@@ -24,9 +24,9 @@ def make_env(name):
 
     env = MyoWrapper(env)
     env = pufferlib.postprocess.ClipAction(env)
-    env = pufferlib.postprocess.EpisodeStats(env)
+    # env = pufferlib.postprocess.EpisodeStats(env)
+    env = gym.wrappers.RecordEpisodeStatistics(env)
 
-    # env = gym.wrappers.RecordEpisodeStatistics(env)
     # env = gym.wrappers.NormalizeObservation(env)
     # env = gym.wrappers.TransformObservation(env, lambda obs: np.clip(obs, -10, 10))
     # env = gym.wrappers.NormalizeReward(env, gamma=gamma)
