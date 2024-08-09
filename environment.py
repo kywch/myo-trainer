@@ -98,7 +98,7 @@ class EpisodeStats(gymnasium.Wrapper):
         self.reset()
 
     def reset(self, seed=None, options=None):
-        self.info = dict(episode_return=[], episode_length=0)
+        self.info = dict(episode_return=0, episode_length=0)
         return self.env.reset(seed=seed, options=options)
 
     def step(self, action):
