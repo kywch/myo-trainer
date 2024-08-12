@@ -26,10 +26,13 @@ def make_env(name, gamma=0.99):
     env = MyoWrapper(env)
     env = pufferlib.postprocess.ClipAction(env)
     env = EpisodeStats(env)
+
     # env = gym.wrappers.RecordEpisodeStatistics(env)
 
-    # env = gym.wrappers.NormalizeObservation(env)
-    # env = gym.wrappers.TransformObservation(env, lambda obs: np.clip(obs, -10, 10))
+    # NOTE: some obs are large in myoChallengeRunTrackP1-v0
+    env = gym.wrappers.NormalizeObservation(env)
+    env = gym.wrappers.TransformObservation(env, lambda obs: np.clip(obs, -10, 10))
+
     env = gym.wrappers.NormalizeReward(env, gamma=gamma)
     env = gym.wrappers.TransformReward(env, lambda reward: np.clip(reward, -10, 10))
 
@@ -42,8 +45,8 @@ class MyoWrapper(gymnasium.Wrapper):
 
         # override observation space
         self._observation_space = gym.spaces.Box(
-            low=-1000,  # env.observation_space.low[0],
-            high=1000,  # env.observation_space.high[0],
+            low=-10000,  # env.observation_space.low[0],
+            high=10000,  # env.observation_space.high[0],
             shape=env.observation_space.shape,
             dtype=np.float32,  # change from float32, which causes type error
         )
