@@ -16,14 +16,17 @@ def env_creator(name="myoElbowPose1D6MFixed-v0"):
     return functools.partial(make_env, name)
 
 
-def make_env(name, gamma=0.99):
+def make_env(name, gamma=0.99, record_video=False):
     """Create an environment by name"""
+
     env = gym.make(name)
 
     # TODO: find ways to override DEFAULT_RWD_KEYS_AND_WEIGHTS
     # reward weights: env.unwrapped.rwd_keys_wt
 
-    env = MyoWrapper(env)
+    if "myo" in name:
+        env = MyoWrapper(env)
+
     env = pufferlib.postprocess.ClipAction(env)
     env = EpisodeStats(env)
 
@@ -35,6 +38,9 @@ def make_env(name, gamma=0.99):
 
     env = gym.wrappers.NormalizeReward(env, gamma=gamma)
     env = gym.wrappers.TransformReward(env, lambda reward: np.clip(reward, -10, 10))
+
+    if record_video:
+        env = gym.wrappers.RecordVideo(env, f"videos/{name}")
 
     return pufferlib.emulation.GymnasiumPufferEnv(env=env)
 
